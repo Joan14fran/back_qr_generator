@@ -8,10 +8,8 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
-
-from django.contrib.sessions.models import Session
-from django.contrib.auth import logout
-from django.utils import timezone
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authtoken.views import ObtainAuthToken
 
 # Create your views here.
 
@@ -20,16 +18,22 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     serializer_class = CustomUserSerializer
   
     
-class LoginAPIView(APIView):
+from django.contrib.auth import authenticate, login
+from rest_framework.authtoken.models import Token
+
+class LoginAPIView(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
         username = request.data.get('username')
         password = request.data.get('password')
 
         if username and password:
-            user = authenticate(username=username, password=password)
+            user = authenticate(request, username=username, password=password)
 
             if user:
-                # Iniciar sesión y generar un token
+                # Iniciar sesión manualmente para actualizar last_login
+                login(request, user)
+
+                # Generar un token
                 token, created = Token.objects.get_or_create(user=user)
 
                 return Response({'token': token.key}, status=status.HTTP_200_OK)
@@ -37,7 +41,18 @@ class LoginAPIView(APIView):
                 return Response({'error': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
         else:
             return Response({'error': 'Se requieren el nombre de usuario y la contraseña'}, status=status.HTTP_400_BAD_REQUEST)
+
+      
         
+class LogoutAPIView(APIView):
+    permission_classes = [IsAuthenticated]
 
-
+    def post(self, request):
+        try:
+            # Invalidar el token de autenticación del usuario actual
+            request.user.auth_token.delete()
+            return Response(status=status.HTTP_200_OK)
+        except AttributeError:
+            # Usuario no autenticado
+            return Response(status=status.HTTP_200_OK)
 
