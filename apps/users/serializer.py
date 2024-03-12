@@ -3,13 +3,12 @@ from django.contrib.auth.hashers import make_password
 from .models import CustomUser
 
 class CustomUserSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)  # Campo de contraseña solo para escritura
+    password = serializers.CharField(write_only=True)
 
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'email', 'nombre', 'apellido', 'password']
+        fields = ['id', 'username', 'email', 'nombre', 'apellido', 'password', 'is_staff', 'is_active']
 
     def create(self, validated_data):
-        # Hashea la contraseña antes de guardarla en la base de datos
         validated_data['password'] = make_password(validated_data.get('password'))
         return super().create(validated_data)

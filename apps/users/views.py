@@ -13,7 +13,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 
 # Create your views here.
 
-class CustomUserViewSet(viewsets.ModelViewSet):
+class CustomUserViewSet(viewsets.ModelViewSet, ObtainAuthToken):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
   
