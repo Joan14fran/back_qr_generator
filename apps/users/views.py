@@ -14,6 +14,7 @@ from rest_framework.exceptions import AuthenticationFailed
 from django.contrib.auth import authenticate
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.views import ObtainAuthToken
+from django.contrib.auth.hashers import make_password
 
 # Create your views here.
 
@@ -68,6 +69,28 @@ class LogoutAPIView(APIView):
             # Usuario no autenticado
             return Response(status=status.HTTP_400_BAD_REQUEST)
         
+class ChangePasswordAPIView(APIView):
+    def post(self, request):
+        # Obtener el usuario actualmente autenticado
+        user = request.user
+
+        # Verificar si el usuario proporcionó la contraseña actual y la nueva contraseña
+        current_password = request.data.get('current_password')
+        new_password = request.data.get('new_password')
+
+        if not current_password or not new_password:
+            return Response({'error': 'Se requiere la contraseña actual y la nueva contraseña'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Verificar si la contraseña actual es válida
+        if not user.check_password(current_password):
+            return Response({'error': 'La contraseña actual no es válida'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Cambiar la contraseña del usuario
+        user.set_password(new_password)
+        user.save()
+
+        return Response({'message': 'Contraseña cambiada exitosamente'}, status=status.HTTP_200_OK)
+
 
 
 

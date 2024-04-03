@@ -9,4 +9,5 @@ urlpatterns = [
     path('api/', include(router.urls)),
     path('api/login/', LoginAPIView.as_view()),
     path('api/logout/', LogoutAPIView.as_view()),
+    path('api/change-password/', ChangePasswordAPIView.as_view()),
 ]
